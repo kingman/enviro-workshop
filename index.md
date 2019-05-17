@@ -137,7 +137,7 @@ In Raspberry Pi shell run:
 ```bash
 cd ~/enviro-workshop/enviro-device/
 
-python3 enviro_demo.py --upload_delay 5
+python3 enviro_demo.py --upload_delay 10
 ```
 Let the script run for 20 second before stop it by press `ctrl-c`
 ### Verify sensor data in Pub/Sub
@@ -194,6 +194,58 @@ ORDER BY time DESC
 LIMIT 20
 ```
 Verify a table with sensor data is returned.
+Discontinue the sensor data streaming from the Raspberry Pi shell by press **Ctrl**+**c**
 
 ## Data analytics and device control
 ### Google Sheets setup
+Open the [sample sheet](https://docs.google.com/spreadsheets/d/1LI07utVbiuonjZfn2ORWmC0kC5_OYc7CYw3vZF1aEuo) and make a copy of it. **File** > **Make a copy...** and input a name for the copy and click **OK**
+#### Configure OAuth2
+1. Get the Oauth2 callback url for the script. Click **IoT** > **OAuth Configuration** and Copy the Authorized redirect URI shown in the menu.
+1. Go to the [API Credentials page](https://console.cloud.google.com/apis/credentials)
+1. Click **Create credentials** > **OAuth client ID**
+1. Choose **Web application**
+1. Give the credential an identifiable name
+1. Paste the URI from the sheet into the **Authorized redirect URIs** input field
+1. Click **Create**
+1. Copy the **client ID** and **client secret** value back into the sheet **OAuth Configuration** input
+1. Click **Save** and wait for the **config saved!** response before **Close** the menu.
+
+#### Configure IoT Core
+1. Click **IoT** > **IoT Core Configuration**
+1. Fill in values of your GCP **project**, IoT Core **region** and **registry**
+1. Click **Save** and wait for the **config saved!** response before **Close** the menu.
+
+### Load devices
+1. Click **IoT** > **Load Devices** and first time the sidebar opens.
+1. Click **Authorize** link in the sidebar and follow through the authorization follow to allow the script to access the IoT Core API on your behalf.
+1. When the OAuth2 flow is successful a new tab is opened with message: **Success! You can close this tab.**
+1. Close the tab.
+1. Click **IoT** > **Load Devices** once again and verify your device name gets populated under the devices column
+1. Click on the check box next to the device name cell to select it.
+
+### Setup BigQuery connector
+1. Click **Data** > **Data Connectors** > **BigQuery**
+1. Choose you GCP project from the dropdown list and click **Write query**
+1. Paste following query into the editor and Replace the place holders `<PROJECT_ID>`, `<DATASET>`, and `<TABLE>` with your BigQuery setup values.
+```sql
+SELECT * FROM `<PROJECT_ID>.<DATASET>.<TABLE>`
+WHERE time > TIMESTAMP(CURRENT_DATE())
+AND device_id = @DEVICE_ID
+ORDER BY time
+```
+1. Add a new parameter. Click **Parameters** > **Add**. Fill in `DEVICE_ID` for **Name** and `Sheet1!C2` for **Cell reference**. Click **Add**
+1. Click **Insert result**
+
+### Send command to your board
+1. In cell under the **Command** cell write write a simple text,
+1. Send command by click **IoT** > **Send command to device**.
+1. Verify you get an `Device is not connected` error message if your board is disconnected.
+1. In Raspberry Pi reconnect the sensor board by running: `python3 enviro_demo.py`
+1. Click **IoT** > **Send command to device** to resend the message.
+1. Verify the message gets displayed on the Sensor Board display.
+
+### Analytics in Google Sheets
+- Create time series graph over the sensor data
+- Derive moving time average value from raw sensor data
+- Create recurring job that [auto loads](https://gsuiteupdates.googleblog.com/2019/02/refresh-bigquery-data-sheets.html) the data from BigQuery
+- Create function that monitors the sensor values and automatically sends commands when configure threshold values are breached.
