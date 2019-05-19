@@ -15,6 +15,7 @@ Architectural overview of solution setup
 - Environmental Sensor Board
 - Raspberry Pi with [Raspbian](https://www.raspberrypi.org/downloads/) and connected to the internet
 - This tutorial assumes that you already have a [GCP account](https://console.cloud.google.com/freetrial) set up.
+- An account linked to G Suite Business or Enterprise or Education for access the Google Sheets - BigQuery connector feature.
 
 ## Create a GCP project
 1. Go to the [GCP Console](https://console.cloud.google.com).
